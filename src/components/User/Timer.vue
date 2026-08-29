@@ -1,4 +1,7 @@
 <template>
+    <!-- Fixed Sidebar Buttons -->
+    <SideButtons />
+
     <!-- Main Wrapper with your warm background layout -->
     <div class="panodoro-container">
     <div class="timer-card">
@@ -44,6 +47,7 @@
 
 <script setup>
 import { computed, onUnmounted, ref } from 'vue';
+import SideButtons from './SideButtons.vue';
 
 const currentMode = ref('pomodoro');
 const timeLeft = ref(25 * 60); // 25 minutes in seconds
