@@ -98,7 +98,7 @@ function handleLogout() {
 }
 
 .brand-dot {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   user-select: none;
   cursor: pointer;
   transition: transform 0.2s ease;
