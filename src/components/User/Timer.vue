@@ -1,13 +1,12 @@
 <template>
-    <!-- Fixed Sidebar Buttons -->
-    <SideButtons />
+    <SideButtons @select="handleSidebarSelect" />
 
-    <!-- Main Wrapper with your warm background layout -->
+    <HistoryPanel v-if="showHistory" @close="showHistory = false" />
+
     <div class="panodoro-container">
     <div class="timer-card">
         <h1 class="brand-title">Panodoro</h1>
 
-        <!-- Tab Selection Tabs -->
         <div class="tabs">
         <button 
             :class="{ active: currentMode === 'pomodoro' }" 
@@ -23,10 +22,8 @@
         >Short break</button>
         </div>
 
-        <!-- Time Display -->
         <div class="time-display">{{ formatTime }}</div>
 
-        <!-- Timer Control Actions -->
         <div class="controls">
         <button class="icon-btn" @click="resetTimer" title="Reset">
             <svg xmlns="http://w3.org" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm-6 8c0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3c-3.31 0-6-2.69-6-6z"/></svg>
@@ -48,10 +45,12 @@
 <script setup>
 import { computed, onUnmounted, ref } from 'vue';
 import SideButtons from './SideButtons.vue';
+import HistoryPanel from './HistoryPanel.vue';
 
 const currentMode = ref('pomodoro');
-const timeLeft = ref(25 * 60); // 25 minutes in seconds
+const timeLeft = ref(25 * 60);
 const isRunning = ref(false);
+const showHistory = ref(false);
 let timerInterval = null;
 
 // Format remaining seconds into MM:SS configuration
@@ -93,6 +92,10 @@ function resetTimer() {
   if (currentMode.value === 'pomodoro') timeLeft.value = 25 * 60;
   if (currentMode.value === 'longBreak') timeLeft.value = 15 * 60;
   if (currentMode.value === 'shortBreak') timeLeft.value = 5 * 60;
+}
+
+function handleSidebarSelect(id) {
+  showHistory.value = id === 'history';
 }
 
 onUnmounted(() => clearInterval(timerInterval));
