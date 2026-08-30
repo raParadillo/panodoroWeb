@@ -58,25 +58,6 @@ const historyEntries = [
   scrollbar-color: rgba(112, 76, 56, 0.7) rgba(255, 255, 255, 0.08);
 }
 
-.history-list::-webkit-scrollbar {
-  width: 10px;
-}
-
-.history-list::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 999px;
-}
-
-.history-list::-webkit-scrollbar-thumb {
-  background: rgba(112, 76, 56, 0.7);
-  border-radius: 999px;
-  border: 2px solid rgba(255, 255, 255, 0.08);
-}
-
-.history-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(86, 58, 43, 0.8);
-}
-
 .panel-header {
   display: flex;
   align-items: center;

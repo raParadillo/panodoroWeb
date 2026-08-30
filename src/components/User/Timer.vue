@@ -1,7 +1,7 @@
 <template>
-    <SideButtons @select="handleSidebarSelect" />
+    <SideButtons ref="sideButtons" @select="handleSidebarSelect" />
 
-    <HistoryPanel v-if="showHistory" @close="showHistory = false" />
+    <HistoryPanel v-if="showHistory" @close="handleHistoryClose" />
 
     <div class="panodoro-container">
     <div class="timer-card">
@@ -51,6 +51,7 @@ const currentMode = ref('pomodoro');
 const timeLeft = ref(25 * 60);
 const isRunning = ref(false);
 const showHistory = ref(false);
+const sideButtons = ref(null);
 let timerInterval = null;
 
 // Format remaining seconds into MM:SS configuration
@@ -95,7 +96,17 @@ function resetTimer() {
 }
 
 function handleSidebarSelect(id) {
+  if (id === null || id === undefined) {
+    showHistory.value = false;
+    return;
+  }
+
   showHistory.value = id === 'history';
+}
+
+function handleHistoryClose() {
+  showHistory.value = false;
+  sideButtons.value?.resetSelection();
 }
 
 onUnmounted(() => clearInterval(timerInterval));
