@@ -31,10 +31,16 @@ function handleSelect(id) {
   }
 }
 
+function resetSelection() {
+  activeItem.value = ''
+}
+
 function handleLogout() {
   emit('logout')
   router.push('/')
 }
+
+defineExpose({ resetSelection })
 </script>
 
 <template>
@@ -98,7 +104,7 @@ function handleLogout() {
 }
 
 .brand-dot {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   user-select: none;
   cursor: pointer;
   transition: transform 0.2s ease;
