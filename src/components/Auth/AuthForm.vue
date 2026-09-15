@@ -6,6 +6,8 @@ const router = useRouter()
 
 // Toggle state between Login and Sign Up
 const isSignUp = ref(false)
+const isForgotPassword = ref(false)
+const codeSent = ref(false)
 
 // Form fields
 const loginEmail = ref('')
@@ -15,9 +17,42 @@ const signUpName = ref('')
 const signUpEmail = ref('')
 const signUpPassword = ref('')
 const confirmPassword = ref('')
+const resetEmail = ref('')
+const resetCode = ref('')
+const newPassword = ref('')
+const confirmNewPassword = ref('')
+
+const setActiveUser = (email) => {
+  localStorage.setItem('panodoro.activeUser', email.trim().toLowerCase())
+}
 
 const handleLogin = () => {
+  setActiveUser(loginEmail.value)
   router.push('/timer')
+}
+
+const showForgotPassword = () => {
+  isForgotPassword.value = true
+  isSignUp.value = false
+  codeSent.value = false
+}
+
+const backToLogin = () => {
+  isForgotPassword.value = false
+  codeSent.value = false
+}
+
+const handleSendCode = () => {
+  codeSent.value = true
+}
+
+const handleResetPassword = () => {
+  if (newPassword.value !== confirmNewPassword.value) {
+    alert('Passwords do not match!')
+    return
+  }
+
+  backToLogin()
 }
 
 const handleSignUp = () => {
@@ -25,6 +60,7 @@ const handleSignUp = () => {
     alert('Passwords do not match!')
     return
   }
+  setActiveUser(signUpEmail.value)
   router.push('/timer')
 }
 </script>
@@ -34,11 +70,72 @@ const handleSignUp = () => {
     <div class="brand">
       <div class="logo">🥐</div>
       <h2>Panodoro</h2>
-      <p class="subtitle">{{ isSignUp ? 'Create your account' : 'Welcome back!' }}</p>
+      <p class="subtitle">
+        {{ isForgotPassword ? 'Reset your password' : isSignUp ? 'Create your account' : 'Welcome back!' }}
+      </p>
+    </div>
+
+    <div v-if="isForgotPassword" class="form-wrapper">
+      <form v-if="!codeSent" @submit.prevent="handleSendCode" class="form">
+        <div class="form-group">
+          <label for="reset-email">Email</label>
+          <input
+            id="reset-email"
+            v-model="resetEmail"
+            type="email"
+            placeholder="Enter your email"
+            required
+          />
+        </div>
+
+        <button type="submit" class="submit-btn">Send Code</button>
+      </form>
+
+      <form v-else @submit.prevent="handleResetPassword" class="form">
+        <div class="form-group">
+          <label for="reset-code">Verification Code</label>
+          <input
+            id="reset-code"
+            v-model="resetCode"
+            type="text"
+            placeholder="Enter the code"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="new-password">New Password</label>
+          <input
+            id="new-password"
+            v-model="newPassword"
+            type="password"
+            placeholder="Create a new password"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="confirm-new-password">Confirm Password</label>
+          <input
+            id="confirm-new-password"
+            v-model="confirmNewPassword"
+            type="password"
+            placeholder="Confirm your new password"
+            required
+          />
+        </div>
+
+        <button type="submit" class="submit-btn">Reset Password</button>
+      </form>
+
+      <div class="switch-format">
+        <span>Remembered your password?</span>
+        <button type="button" class="switch-btn" @click="backToLogin">Log In</button>
+      </div>
     </div>
 
     <!-- Log In Form (Shown when isSignUp is false) -->
-    <div v-show="!isSignUp" class="form-wrapper">
+    <div v-else v-show="!isSignUp" class="form-wrapper">
       <form @submit.prevent="handleLogin" class="form">
         <div class="form-group">
           <label for="login-email">Email</label>
@@ -54,7 +151,7 @@ const handleSignUp = () => {
         <div class="form-group">
           <div class="label-row">
             <label for="login-password">Password</label>
-            <a href="#" class="forgot-link">Forgot password?</a>
+            <button type="button" class="forgot-link" @click="showForgotPassword">Forgot password?</button>
           </div>
           <input 
             id="login-password" 
