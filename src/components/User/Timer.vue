@@ -110,11 +110,10 @@ watch([studyMinutes, breakMinutes, totalLoops], ([newStudyMinutes, newBreakMinut
     }));
 });
 
-// Format remaining seconds into MM:SS configuration
 const formatTime = computed(() => {
-const minutes = Math.floor(timeLeft.value / 60);
-const seconds = timeLeft.value % 60;
-return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    const minutes = Math.floor(timeLeft.value / 60);
+    const seconds = timeLeft.value % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 });
 
 function toggleTimer() {
@@ -186,6 +185,7 @@ onUnmounted(() => clearInterval(timerInterval));
 
 <style scoped>
 .panodoro-container {
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -194,6 +194,13 @@ onUnmounted(() => clearInterval(timerInterval));
     background:
         linear-gradient(rgba(53, 37, 28, 0.32), rgba(53, 37, 28, 0.32)),
         url('../../assets/images/panodoroBg.png') no-repeat center center / cover;
+}
+
+.floating-overlay-wrapper {
+    position: absolute;
+    top: 15%;
+    left: 10%;
+    z-index: 100;
 }
 
 .timer-card {
