@@ -31,10 +31,16 @@ function handleSelect(id) {
   }
 }
 
+function resetSelection() {
+  activeItem.value = ''
+}
+
 function handleLogout() {
   emit('logout')
   router.push('/')
 }
+
+defineExpose({ resetSelection })
 </script>
 
 <template>
