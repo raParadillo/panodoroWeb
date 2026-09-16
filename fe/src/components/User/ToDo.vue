@@ -1,6 +1,8 @@
 <script setup>
 import { ref } from 'vue'
 
+const emit = defineEmits(['close'])
+
 const currentView = ref('list') // 'list' or 'create'
 const newListTitle = ref('')
 const todoLists = ref([
@@ -15,6 +17,10 @@ function toggleTask(id) {
     if (task) task.checked = !task.checked
 }
 
+function removeTask(id) {
+    todoLists.value = todoLists.value.filter(item => item.id !== id)
+}
+
 function handleAddList() {
     if (!newListTitle.value.trim()) return
     todoLists.value.push({ id: Date.now(), title: newListTitle.value, checked: false })
@@ -27,7 +33,7 @@ function handleAddList() {
     <!-- List View Content Card -->
     <div v-if="currentView === 'list'" class="modal-card">
         <div class="card-header">
-            <button class="icon-btn" aria-label="Back">&lt;</button>
+            <button class="icon-btn" @click="emit('close')" aria-label="Close to do list">&lt;</button>
             <span class="header-title">To do List</span>
             <button class="icon-btn" @click="currentView = 'create'" aria-label="Add">+</button>
         </div>
@@ -37,6 +43,15 @@ function handleAddList() {
                     <span v-if="item.checked" class="check-mark">✓</span>
                 </div>
                 <div class="todo-textbox">{{ item.title }}</div>
+                <button
+                    type="button"
+                    class="remove-btn"
+                    aria-label="Remove task"
+                    title="Remove task"
+                    @click.stop="removeTask(item.id)"
+                >
+                    ×
+                </button>
             </div>
         </div>
     </div>
@@ -58,12 +73,14 @@ function handleAddList() {
 <style scoped>
 /* Core layout of the standalone capsule block */
 .modal-card {
-    width: 350px;
-    background-color: #cca885;
+    width: min(680px, calc(100vw - 2rem));
+    background: rgba(204, 168, 133, 0.82);
     border-radius: 20px; /* Enhanced corners for a larger box scale */
     padding: 24px; /* Increased padding inside the container */
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
     box-sizing: border-box;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
 
 .card-header {
@@ -97,6 +114,25 @@ function handleAddList() {
 .card-content.scrollable {
     max-height: 280px; /* Increased maximum list viewport display height */
     overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #80604d rgba(117, 79, 58, 0.14);
+}
+
+.card-content.scrollable::-webkit-scrollbar {
+    width: 9px;
+}
+
+.card-content.scrollable::-webkit-scrollbar-thumb {
+    background: linear-gradient(#9d765d, #72503f);
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+}
+
+.card-content.scrollable::-webkit-scrollbar-track {
+    background: rgba(117, 79, 58, 0.14);
+    border-radius: 999px;
 }
 
 .todo-item {
@@ -104,11 +140,13 @@ function handleAddList() {
     align-items: center;
     gap: 12px; /* Increased item gap spacing */
     margin-bottom: 12px; /* Added line padding spacing */
+    min-width: 0;
     cursor: pointer;
 }
 
 .todo-textbox {
     flex-grow: 1;
+    min-width: 0;
     background-color: #ffffff;
     border-radius: 24px; /* Rounded pill shapes proportional to layout size */
     height: 44px; /* Scaled vertical capsule height up from 32px */
@@ -120,6 +158,31 @@ function handleAddList() {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.remove-btn {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    border: 1px solid rgba(125, 92, 63, 0.24);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.58);
+    color: #7d5c3f;
+    cursor: pointer;
+    font-size: 1.35rem;
+    line-height: 1;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.remove-btn:hover {
+    background: #8b4e3e;
+    color: #fff;
+    transform: scale(1.08);
+}
+
+.remove-btn:focus-visible {
+    outline: 2px solid #7d5c3f;
+    outline-offset: 2px;
 }
 
 .custom-checkbox {

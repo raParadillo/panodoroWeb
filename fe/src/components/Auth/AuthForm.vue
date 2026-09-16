@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { loginUser, registerUser, requestPasswordReset, resetPassword } from '../../services/api'
 
 const router = useRouter()
 
@@ -21,14 +22,36 @@ const resetEmail = ref('')
 const resetCode = ref('')
 const newPassword = ref('')
 const confirmNewPassword = ref('')
+const isSubmitting = ref(false)
+const errorMessage = ref('')
 
 const setActiveUser = (email) => {
   localStorage.setItem('panodoro.activeUser', email.trim().toLowerCase())
 }
 
-const handleLogin = () => {
-  setActiveUser(loginEmail.value)
-  router.push('/timer')
+const saveAuthenticatedUser = (data, fallbackEmail) => {
+  if (data.token) {
+    localStorage.setItem('panodoro.authToken', data.token)
+  }
+  setActiveUser(data.user?.email || fallbackEmail)
+}
+
+const handleLogin = async () => {
+  errorMessage.value = ''
+  isSubmitting.value = true
+
+  try {
+    const data = await loginUser({
+      email: loginEmail.value,
+      password: loginPassword.value,
+    })
+    saveAuthenticatedUser(data, loginEmail.value)
+    await router.push('/timer')
+  } catch (error) {
+    errorMessage.value = error.message
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
 const showForgotPassword = () => {
@@ -42,31 +65,73 @@ const backToLogin = () => {
   codeSent.value = false
 }
 
-const handleSendCode = () => {
-  codeSent.value = true
+const handleSendCode = async () => {
+  errorMessage.value = ''
+  isSubmitting.value = true
+
+  try {
+    await requestPasswordReset({ email: resetEmail.value })
+    codeSent.value = true
+  } catch (error) {
+    errorMessage.value = error.message
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
-const handleResetPassword = () => {
+const handleResetPassword = async () => {
   if (newPassword.value !== confirmNewPassword.value) {
-    alert('Passwords do not match!')
+    errorMessage.value = 'Passwords do not match.'
     return
   }
 
-  backToLogin()
+  errorMessage.value = ''
+  isSubmitting.value = true
+
+  try {
+    await resetPassword({
+      email: resetEmail.value,
+      code: resetCode.value,
+      password: newPassword.value,
+      password_confirmation: confirmNewPassword.value,
+    })
+    backToLogin()
+  } catch (error) {
+    errorMessage.value = error.message
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
-const handleSignUp = () => {
+const handleSignUp = async () => {
   if (signUpPassword.value !== confirmPassword.value) {
-    alert('Passwords do not match!')
+    errorMessage.value = 'Passwords do not match.'
     return
   }
-  setActiveUser(signUpEmail.value)
-  router.push('/timer')
+
+  errorMessage.value = ''
+  isSubmitting.value = true
+
+  try {
+    const data = await registerUser({
+      full_name: signUpName.value,
+      email: signUpEmail.value,
+      password: signUpPassword.value,
+      password_confirmation: confirmPassword.value,
+    })
+    saveAuthenticatedUser(data, signUpEmail.value)
+    await router.push('/timer')
+  } catch (error) {
+    errorMessage.value = error.message
+  } finally {
+    isSubmitting.value = false
+  }
 }
 </script>
 
 <template>
   <div class="auth-card">
+    <p v-if="errorMessage" class="error-message" role="alert">{{ errorMessage }}</p>
     <div class="brand">
       <div class="logo">🥐</div>
       <h2>Panodoro</h2>
@@ -162,7 +227,9 @@ const handleSignUp = () => {
           />
         </div>
 
-        <button type="submit" class="submit-btn">Log In</button>
+        <button type="submit" class="submit-btn" :disabled="isSubmitting">
+          {{ isSubmitting ? 'Logging in...' : 'Log In' }}
+        </button>
       </form>
 
       <!-- Classic Switch format at the bottom -->
@@ -219,7 +286,9 @@ const handleSignUp = () => {
           />
         </div>
 
-        <button type="submit" class="submit-btn">Create Account</button>
+        <button type="submit" class="submit-btn" :disabled="isSubmitting">
+          {{ isSubmitting ? 'Creating account...' : 'Create Account' }}
+        </button>
       </form>
 
       <!-- Classic Switch format at the bottom -->
@@ -245,6 +314,17 @@ const handleSignUp = () => {
   color: #ffffff;
   font-family: 'Inter', system-ui, sans-serif;
   margin: 0 auto;
+}
+
+.error-message {
+  margin: 0 0 1.25rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid rgba(255, 180, 160, 0.55);
+  border-radius: 10px;
+  background: rgba(120, 24, 18, 0.3);
+  color: #ffe1d8;
+  font-size: 0.82rem;
+  line-height: 1.4;
 }
 
 .brand {
@@ -358,6 +438,11 @@ input:focus {
 
 .submit-btn:hover {
   background: #e48a2f;
+}
+
+.submit-btn:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 
 /* Classic Switch bottom section */

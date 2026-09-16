@@ -86,6 +86,7 @@ import HistoryPanel from './HistoryPanel.vue';
 import NotesCard from './NotesCard.vue';
 import ToDo from './ToDo.vue';
 import Analytics from './Analytics.vue';
+import { logoutUser } from '../../services/api';
 
 const studyMinutes = ref(25);
 const breakMinutes = ref(5);
@@ -206,9 +207,12 @@ function closePanel() {
 }
 
 function handleLogout() {
-        stopTimer();
-        localStorage.removeItem('panodoro.activeUser');
-        router.replace({ name: 'authdefault' });
+    stopTimer();
+
+    logoutUser().catch(() => {});
+    localStorage.removeItem('panodoro.activeUser');
+    localStorage.removeItem('panodoro.authToken');
+    window.location.replace('/authdefault');
 }
 
 onUnmounted(() => clearInterval(timerInterval));

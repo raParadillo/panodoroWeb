@@ -6,12 +6,11 @@ import TimerView from '@/components/User/Timer.vue'
 const routes = [
   {
     path: '/',
-    // Send users straight to the main dashboard timer page
-    redirect: '/timer'
+    redirect: { name: 'authdefault' }
   },
   {
-    path: '/auth',
-    name: 'auth',
+    path: '/authdefault',
+    name: 'authdefault',
     component: AuthView
   },
   {
