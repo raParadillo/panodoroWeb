@@ -20,7 +20,7 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-           'https://panodoro-web.vercel.app',
+         'https://panodoro-web.vercel.app',
     ],
 
     'allowed_origins_patterns' => [],
