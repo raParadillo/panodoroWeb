@@ -93,13 +93,13 @@ onMounted(loadMoreHistory)
 .history-panel {
   width: min(780px, 80vw);
   max-height: 78vh;
-  background: rgba(204, 171, 129, 0.38);
+  background: rgba(204, 171, 129, 0.25);
   border: 1px solid rgba(120, 80, 48, 0.35);
   border-radius: 28px;
   padding: 26px 28px 20px;
   box-shadow: 0 18px 36px rgba(58, 35, 20, 0.18);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(22px) saturate(115%);
+  -webkit-backdrop-filter: blur(22px) saturate(115%);
   display: flex;
   flex-direction: column;
 }

@@ -271,8 +271,6 @@ onUnmounted(() => {
     justify-content: center;
     padding: 1.5rem;
     background: rgba(35, 24, 20, 0.18);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
 }
 
 .floating-overlay-wrapper {
