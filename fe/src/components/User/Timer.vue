@@ -258,7 +258,7 @@ onUnmounted(() => {
     min-height: 100vh;
     padding: 1.25rem;
     background:
-        linear-gradient(rgba(53, 37, 28, 0.32), rgba(53, 37, 28, 0.32)),
+        linear-gradient(rgba(35, 24, 20, 0.56), rgba(35, 24, 20, 0.56)),
         url('../../assets/images/panodoroBg.png') no-repeat center center / cover;
 }
 
