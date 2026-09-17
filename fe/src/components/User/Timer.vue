@@ -109,7 +109,7 @@ import Analytics from './Analytics.vue';
 const studyMinutes = ref(25);
 const breakMinutes = ref(5);
 const totalLoops = ref(4);
-const username = ref(localStorage.getItem('panodoro.activeUser') || 'Panodoro');
+const username = ref('Panodoro');
 const currentMode = ref('study');
 const timeLeft = ref(studyMinutes.value * 60);
 const isRunning = ref(false);
@@ -134,9 +134,9 @@ async function loadTimerSettings() {
 async function loadUsername() {
     try {
         const user = await getCurrentUser();
-        username.value = user.full_name || user.email || username.value;
+        username.value = user.full_name || 'Panodoro';
     } catch {
-        // Keep the locally saved email fallback when the profile request fails.
+        // Keep the neutral label when the profile request fails.
     }
 }
 
