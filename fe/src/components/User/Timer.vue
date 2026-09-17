@@ -10,7 +10,7 @@
 
     <div class="panodoro-container">
     <main class="timer-card">
-        <h1 class="brand-title">Panodoro</h1>
+        <h1 class="brand-title">{{username}}</h1>
 
         <Transition name="settings">
         <div v-show="!isRunning" class="settings" aria-label="Timer settings">
@@ -55,8 +55,25 @@
                 </div>
             </div>
 
-            <div class="phase-label">{{ currentMode === 'study' ? 'Time to study' : 'Break time' }}</div>
-            <div class="time-display">{{ formatTime }}</div>
+            <div class="phase-label">
+                {{ currentMode === 'study' ? 'Time to study' : 'Break time' }}
+            </div>
+            <div class="time-display">
+                {{ formatTime }}
+            </div>
+
+            <div
+                class="pandesal-idle"
+                :class="{ 'is-spinning': isRunning }"
+                :style="{ backgroundImage: `url(${pandesalImage})` }"
+                role="img"
+                aria-label="Cute pandesal spinning like a disk"
+            ></div>
+
+            <div class="record-tonearm" :class="{ 'is-playing': isRunning }" aria-hidden="true">
+                <span class="tonearm-head"></span>
+                <span class="tonearm-needle"></span>
+            </div>
 
             <button class="icon-btn play-pause" @click="toggleTimer" :title="isRunning ? 'Pause timer' : 'Start timer'" :aria-label="isRunning ? 'Pause timer' : 'Start timer'">
                 <span v-if="!isRunning">
@@ -79,18 +96,20 @@
 </template>
 
 <script setup>
-import { computed, onUnmounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import pandesalImage from '../../assets/pandesal.png';
+import { addStudyTime, getCurrentUser, getTimerSettings, logoutUser, updateTimerSettings } from '../../services/api';
 import SideButtons from './SideButtons.vue';
 import HistoryPanel from './HistoryPanel.vue';
 import NotesCard from './NotesCard.vue';
 import ToDo from './ToDo.vue';
 import Analytics from './Analytics.vue';
-import { logoutUser } from '../../services/api';
 
 const studyMinutes = ref(25);
 const breakMinutes = ref(5);
 const totalLoops = ref(4);
+const username = ref(localStorage.getItem('panodoro.activeUser') || 'Panodoro');
 const currentMode = ref('study');
 const timeLeft = ref(studyMinutes.value * 60);
 const isRunning = ref(false);
@@ -98,46 +117,48 @@ const loopCount = ref(1);
 const activePanel = ref(null);
 const sideButtons = ref(null);
 let timerInterval = null;
-const settingsStorageKey = `panodoro.timerSettings:${localStorage.getItem('panodoro.activeUser') || 'guest'}`;
-const statsStorageKey = `panodoro.studyStats:${localStorage.getItem('panodoro.activeUser') || 'guest'}`;
+let pendingStudySeconds = 0;
 
-try {
-    const savedSettings = JSON.parse(localStorage.getItem(settingsStorageKey) || 'null');
-    if (savedSettings) {
-        studyMinutes.value = Math.max(1, Math.min(120, Number(savedSettings.studyMinutes) || 25));
-        breakMinutes.value = Math.max(1, Math.min(60, Number(savedSettings.breakMinutes) || 5));
-        totalLoops.value = Math.max(1, Math.min(12, Number(savedSettings.totalLoops) || 4));
+async function loadTimerSettings() {
+    try {
+        const settings = await getTimerSettings();
+        studyMinutes.value = settings.study_minutes;
+        breakMinutes.value = settings.break_minutes;
+        totalLoops.value = settings.total_loops;
         timeLeft.value = studyMinutes.value * 60;
+    } catch {
+        // Keep the defaults if settings cannot be loaded.
     }
-} catch {
-    localStorage.removeItem(settingsStorageKey);
 }
 
-watch([studyMinutes, breakMinutes, totalLoops], ([newStudyMinutes, newBreakMinutes, newTotalLoops]) => {
-    localStorage.setItem(settingsStorageKey, JSON.stringify({
-        studyMinutes: newStudyMinutes,
-        breakMinutes: newBreakMinutes,
-        totalLoops: newTotalLoops
-    }));
-});
+async function loadUsername() {
+    try {
+        const user = await getCurrentUser();
+        username.value = user.full_name || user.email || username.value;
+    } catch {
+        // Keep the locally saved email fallback when the profile request fails.
+    }
+}
+
+function saveTimerSettings() {
+    return updateTimerSettings({
+        study_minutes: studyMinutes.value,
+        break_minutes: breakMinutes.value,
+        total_loops: totalLoops.value,
+    }).catch(() => {})
+}
 
 function recordStudySecond() {
-    const today = new Date().toISOString().slice(0, 10);
-    let stats = { totalStudySeconds: 0, dailyStudySeconds: {} };
+    pendingStudySeconds++;
+}
 
-    try {
-        const savedStats = JSON.parse(localStorage.getItem(statsStorageKey) || 'null');
-        stats = {
-            totalStudySeconds: Number(savedStats?.totalStudySeconds) || Number(savedStats?.studySeconds) || 0,
-            dailyStudySeconds: savedStats?.dailyStudySeconds || {}
-        };
-    } catch {
-        stats = { totalStudySeconds: 0, dailyStudySeconds: {} };
-    }
-
-    stats.totalStudySeconds++;
-    stats.dailyStudySeconds[today] = (Number(stats.dailyStudySeconds[today]) || 0) + 1;
-    localStorage.setItem(statsStorageKey, JSON.stringify(stats));
+async function flushStudyTime() {
+    if (!pendingStudySeconds) return;
+    const seconds = pendingStudySeconds;
+    pendingStudySeconds = 0;
+    await addStudyTime({ seconds_studied: seconds }).catch(() => {
+        pendingStudySeconds += seconds;
+    });
 }
 
 const formatTime = computed(() => {
@@ -155,6 +176,7 @@ function toggleTimer() {
                 if (timeLeft.value > 0) {
                     timeLeft.value--;
                     if (currentMode.value === 'study') recordStudySecond();
+                    if (pendingStudySeconds >= 10) void flushStudyTime();
                     return;
                 }
 
@@ -176,6 +198,7 @@ function toggleTimer() {
 function stopTimer() {
     isRunning.value = false;
     clearInterval(timerInterval);
+    void flushStudyTime();
 }
 
 function resetTimer() {
@@ -195,6 +218,7 @@ function changeSetting(setting, amount) {
     currentMode.value = 'study';
     loopCount.value = 1;
     timeLeft.value = studyMinutes.value * 60;
+    void saveTimerSettings();
 }
 
 function handleSidebarSelect(id) {
@@ -215,7 +239,14 @@ function handleLogout() {
     window.location.replace('/authdefault');
 }
 
-onUnmounted(() => clearInterval(timerInterval));
+onMounted(() => {
+    loadTimerSettings();
+    loadUsername();
+});
+onUnmounted(() => {
+    clearInterval(timerInterval);
+    void flushStudyTime();
+});
 </script>
 
 <style scoped>
@@ -369,6 +400,112 @@ onUnmounted(() => clearInterval(timerInterval));
     background: radial-gradient(circle, rgba(83, 57, 54, 0.64) 0 58%, rgba(45, 33, 38, 0.36) 59% 100%);
     box-shadow: 0 0 0 7px rgba(16, 28, 44, 0.18), 0 0 22px rgba(17, 211, 226, 0.55), inset 0 0 22px rgba(230, 25, 162, 0.2);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.pandesal-idle {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: 50%;
+    pointer-events: none;
+    background-color: rgba(24, 18, 24, 0.62);
+    background-blend-mode: multiply;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    opacity: 0.72;
+    filter: brightness(0.62) saturate(0.82);
+    box-shadow: inset 0 0 34px rgba(0, 0, 0, 0.42), inset 0 0 0 2px rgba(255, 255, 255, 0.14);
+}
+
+.pandesal-idle.is-spinning {
+    animation: pandesal-spin 10s linear infinite;
+}
+
+.pandesal-idle::before {
+    content: '';
+    position: absolute;
+    inset: 43%;
+    border: 4px solid rgba(255, 255, 255, 0.52);
+    border-radius: 50%;
+    background: rgba(41, 29, 34, 0.78);
+    box-shadow: 0 0 0 6px rgba(41, 29, 34, 0.18), inset 0 2px 5px rgba(255, 255, 255, 0.3);
+}
+
+.pandesal-idle::after {
+    content: '';
+    position: absolute;
+    inset: 8%;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 50%;
+    transform: rotate(28deg);
+    background: linear-gradient(125deg, transparent 35%, rgba(255, 255, 255, 0.14) 50%, transparent 64%);
+}
+
+.record-tonearm {
+    position: absolute;
+    right: -15%;
+    top: 0%;
+    width: 70%;
+    height: 0.62rem;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #f4d39a 0%, #b77946 46%, #70402f 100%);
+    box-shadow: 0 3px 5px rgba(54, 30, 22, 0.38);
+    transform: rotate(-100deg);
+    transform-origin: right center;
+    transition: top 0.55s ease, transform 0.55s ease;
+}
+
+.record-tonearm.is-playing {
+    top: 0%;
+    transform: rotate(-70deg);
+}
+
+.record-tonearm::before {
+    content: '';
+    position: absolute;
+    right: -0.48rem;
+    top: 50%;
+    width: 1.15rem;
+    height: 1.15rem;
+    border: 0.22rem solid #b77946;
+    border-radius: 50%;
+    background: #f5e5c9;
+    box-shadow: inset 0 0 0 0.2rem #70402f, 0 2px 4px rgba(54, 30, 22, 0.32);
+    transform: translateY(-50%);
+}
+
+.tonearm-head {
+    position: absolute;
+    left: -0.25rem;
+    top: 50%;
+    width: 1.2rem;
+    height: 0.9rem;
+    border-radius: 0.25rem;
+    background: #8d4f32;
+    box-shadow: 0 2px 3px rgba(54, 30, 22, 0.35);
+    transform: translateY(-50%);
+}
+
+.tonearm-needle {
+    position: absolute;
+    left: -0.1rem;
+    top: 50%;
+    width: 0.12rem;
+    height: 0.42rem;
+    background: #e7edf2;
+    transform: rotate(160deg);
+    transform-origin: top center;
+}
+
+@keyframes pandesal-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .timer-orbit::before {

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-labelledby="title desc">
+  <title id="title">Cute pandesal</title>
+  <desc id="desc">A warm golden pandesal bread roll with a smiling face.</desc>
+  <defs>
+    <radialGradient id="bread" cx="35%" cy="28%" r="78%">
+      <stop offset="0" stop-color="#ffe7a6"/>
+      <stop offset="0.58" stop-color="#f4b65d"/>
+      <stop offset="1" stop-color="#b86a34"/>
+    </radialGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="9" stdDeviation="7" flood-color="#271c28" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+  <g filter="url(#shadow)">
+    <path d="M43 130c-8-30 14-59 48-70 34-12 77-2 99 24 22 26 21 66-3 91-24 25-70 35-104 19-25-12-34-37-40-64Z" fill="url(#bread)" stroke="#87482b" stroke-width="5"/>
+    <path d="M61 91c17-18 45-27 72-24M57 113c20-17 48-24 79-18M64 145c20-13 45-16 72-9" fill="none" stroke="#ffe5a0" stroke-linecap="round" stroke-width="9" opacity=".72"/>
+    <circle cx="101" cy="130" r="6" fill="#51302c"/>
+    <circle cx="151" cy="130" r="6" fill="#51302c"/>
+    <path d="M111 148c10 12 24 12 34 0" fill="none" stroke="#51302c" stroke-linecap="round" stroke-width="6"/>
+    <circle cx="81" cy="149" r="9" fill="#e98068" opacity=".6"/>
+    <circle cx="173" cy="149" r="9" fill="#e98068" opacity=".6"/>
+  </g>
+</svg>

@@ -79,7 +79,20 @@ const handleSendCode = async () => {
   }
 }
 
+const validatePasswordLength = (password, fieldName = 'Password') => {
+  if (password.length < 8) {
+    errorMessage.value = `${fieldName} must be at least 8 characters long.`
+    return false
+  }
+
+  return true
+}
+
 const handleResetPassword = async () => {
+  if (!validatePasswordLength(newPassword.value, 'Password')) {
+    return
+  }
+
   if (newPassword.value !== confirmNewPassword.value) {
     errorMessage.value = 'Passwords do not match.'
     return
@@ -104,6 +117,10 @@ const handleResetPassword = async () => {
 }
 
 const handleSignUp = async () => {
+  if (!validatePasswordLength(signUpPassword.value, 'Password')) {
+    return
+  }
+
   if (signUpPassword.value !== confirmPassword.value) {
     errorMessage.value = 'Passwords do not match.'
     return
@@ -153,7 +170,9 @@ const handleSignUp = async () => {
           />
         </div>
 
-        <button type="submit" class="submit-btn">Send Code</button>
+        <button type="submit" class="submit-btn" :disabled="isSubmitting">
+          {{ isSubmitting ? 'Sending code...' : 'Send Code' }}
+        </button>
       </form>
 
       <form v-else @submit.prevent="handleResetPassword" class="form">

@@ -1,19 +1,17 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { getAnalytics } from '../../services/api'
 
 const emit = defineEmits(['close'])
 const totalStudySeconds = ref(0)
 const todayStudySeconds = ref(0)
 let refreshInterval = null
 
-const statsStorageKey = `panodoro.studyStats:${localStorage.getItem('panodoro.activeUser') || 'guest'}`
-const todayKey = new Date().toISOString().slice(0, 10)
-
-function loadStats() {
+async function loadStats() {
   try {
-    const savedStats = JSON.parse(localStorage.getItem(statsStorageKey) || 'null')
-    totalStudySeconds.value = Math.max(0, Number(savedStats?.totalStudySeconds) || Number(savedStats?.studySeconds) || 0)
-    todayStudySeconds.value = Math.max(0, Number(savedStats?.dailyStudySeconds?.[todayKey]) || 0)
+    const stats = await getAnalytics()
+    totalStudySeconds.value = stats.total_study_seconds
+    todayStudySeconds.value = stats.today_study_seconds
   } catch {
     totalStudySeconds.value = 0
     todayStudySeconds.value = 0
@@ -33,7 +31,7 @@ const formattedTotal = computed(() => formatDuration(totalStudySeconds.value))
 
 onMounted(() => {
   loadStats()
-  refreshInterval = setInterval(loadStats, 1000)
+  refreshInterval = setInterval(loadStats, 10000)
 })
 
 onUnmounted(() => clearInterval(refreshInterval))

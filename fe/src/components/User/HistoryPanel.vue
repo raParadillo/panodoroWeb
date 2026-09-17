@@ -1,20 +1,68 @@
 <script setup>
-const historyEntries = [
-  { date: 'August 8, 2026', items: ['Added a New Task', 'Added a New Task'] },
-  { date: 'August 7, 2026', items: ['Added a New Task', 'Added a New Task','Added a New Task','Added a New Task','Added a New Task', 'Added a New Task','Added a New Task'] },
-  
-]
+import { computed, nextTick, onMounted, ref } from 'vue'
+import { getHistory } from '../../services/api'
+
+const emit = defineEmits(['close'])
+const activities = ref([])
+const currentPage = ref(0)
+const lastPage = ref(1)
+const isLoading = ref(false)
+const historyError = ref('')
+
+async function loadMoreHistory() {
+  if (isLoading.value || currentPage.value >= lastPage.value) return
+
+  isLoading.value = true
+  historyError.value = ''
+  const response = await getHistory(currentPage.value + 1).catch((error) => {
+    historyError.value = error.message || 'History could not be loaded.'
+    return null
+  })
+  if (response) {
+    const entries = Array.isArray(response.data) ? response.data : []
+    activities.value.push(...entries)
+    currentPage.value = response.current_page ?? currentPage.value + 1
+    lastPage.value = response.last_page ?? currentPage.value
+    await nextTick()
+
+    const list = document.querySelector('.history-list')
+    if (list && list.scrollHeight <= list.clientHeight && currentPage.value < lastPage.value) {
+      await loadMoreHistory()
+    }
+  }
+  isLoading.value = false
+}
+
+function handleHistoryScroll(event) {
+  const element = event.currentTarget
+  const nearBottom = element.scrollTop + element.clientHeight >= element.scrollHeight - 80
+  if (nearBottom) loadMoreHistory()
+}
+
+const historyEntries = computed(() => {
+  const groups = new Map()
+  activities.value.forEach((activity) => {
+    const date = new Date(activity.created_at).toLocaleDateString(undefined, {
+      year: 'numeric', month: 'long', day: 'numeric'
+    })
+    if (!groups.has(date)) groups.set(date, [])
+    groups.get(date).push(activity.description)
+  })
+  return [...groups].map(([date, items]) => ({ date, items }))
+})
+
+onMounted(loadMoreHistory)
 </script>
 
 <template>
   <div class="history-overlay" aria-label="History panel">
     <div class="history-panel">
       <div class="panel-header">
-        <button class="back-btn" aria-label="Close history">‹</button>
+        <button class="back-btn" aria-label="Close history" @click="emit('close')">‹</button>
         <h2>History</h2>
       </div>
 
-      <div class="history-list">
+      <div class="history-list" @scroll="handleHistoryScroll">
         <div v-for="group in historyEntries" :key="group.date" class="date-group">
           <p class="date-label">{{ group.date }}</p>
 
@@ -22,6 +70,10 @@ const historyEntries = [
             {{ entry }}
           </div>
         </div>
+        <p v-if="isLoading" class="history-status">Loading more history...</p>
+        <p v-else-if="historyError" class="history-status error-status">{{ historyError }}</p>
+        <p v-else-if="currentPage >= lastPage && activities.length" class="history-status">You have reached the beginning.</p>
+        <p v-else-if="!isLoading && !activities.length" class="history-status">No history yet.</p>
       </div>
     </div>
   </div>
@@ -52,10 +104,23 @@ const historyEntries = [
 }
 
 .history-list {
+  flex: 1;
+  min-height: 140px;
   overflow-y: auto;
   padding-right: 8px;
   scrollbar-width: thin;
   scrollbar-color: rgba(112, 76, 56, 0.7) rgba(255, 255, 255, 0.08);
+}
+
+.history-status {
+  margin: 24px 0 8px;
+  color: rgba(49, 33, 27, 0.7);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.error-status {
+  color: #7f3f32;
 }
 
 .panel-header {

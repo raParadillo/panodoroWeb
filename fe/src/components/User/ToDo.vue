@@ -1,32 +1,47 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { createTask, deleteTask, getTasks, updateTask } from '../../services/api'
 
 const emit = defineEmits(['close'])
 
 const currentView = ref('list') // 'list' or 'create'
 const newListTitle = ref('')
-const todoLists = ref([
-    { id: 1, title: 'Study session tasks', checked: true },
-    { id: 2, title: 'Buy groceries', checked: false },
-    { id: 3, title: 'Read project documentation', checked: false },
-    { id: 4, title: 'Fix CSS bugs', checked: false },
-])
+const todoLists = ref([])
 
-function toggleTask(id) {
-    const task = todoLists.value.find(item => item.id === id)
-    if (task) task.checked = !task.checked
+async function loadTasks() {
+    try {
+        todoLists.value = (await getTasks()).map(task => ({
+            id: task.task_id,
+            title: task.title,
+            checked: task.is_checked,
+        }))
+    } catch {
+        todoLists.value = []
+    }
 }
 
-function removeTask(id) {
+async function toggleTask(id) {
+    const task = todoLists.value.find(item => item.id === id)
+    if (task) {
+        task.checked = !task.checked
+        await updateTask(id, { is_checked: task.checked })
+    }
+}
+
+async function removeTask(id) {
+    await deleteTask(id)
     todoLists.value = todoLists.value.filter(item => item.id !== id)
 }
 
-function handleAddList() {
+async function handleAddList() {
     if (!newListTitle.value.trim()) return
-    todoLists.value.push({ id: Date.now(), title: newListTitle.value, checked: false })
+    const task = await createTask({ title: newListTitle.value.trim() })
+    todoLists.value.push({ id: task.task_id, title: task.title, checked: task.is_checked })
     newListTitle.value = ''
     currentView.value = 'list'
 }
+
+onMounted(loadTasks)
 </script>
 
 <template>

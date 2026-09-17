@@ -60,9 +60,7 @@ class AuthController extends Controller
         $code = (string) random_int(100000, 999999);
 
         DB::table('password_resets')
-            ->where('user_id', $user->user_id)
-            ->where('used', false)
-            ->update(['used' => true]);
+            ->where('user_id', $user->user_id)->where('used', false)->update(['used' => true]);
 
         DB::table('password_resets')->insert([
             'user_id' => $user->user_id,
@@ -71,7 +69,7 @@ class AuthController extends Controller
             'used' => false,
         ]);
 
-        Mail::raw("Your Panodoro password reset code is: {$code}\n\nThis code expires in 15 minutes.", function ($message) use ($user) {
+        Mail::send('emails.password-reset', ['code' => $code], function ($message) use ($user) {
             $message->to($user->email)
                 ->subject('Panodoro password reset code');
         });

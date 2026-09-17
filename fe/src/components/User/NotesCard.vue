@@ -49,7 +49,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import { createNote, deleteNote, getNotes, updateNote } from '../../services/api';
 
 const emit = defineEmits(['close']);
 
@@ -60,11 +61,19 @@ const currentTitle = ref('');
 const currentContent = ref('');
 
 // Reactive store for notes
-const notes = ref([
-    { id: 1, title: 'Weekend recipes', content: 'Recipe ideas for next weekend...' },
-    { id: 2, title: 'Pomodoro strategy', content: 'Pomodoro technique strategy guidelines' },
-    { id: 3, title: 'Project checklist', content: 'Project layout checklist & notes' }
-]);
+const notes = ref([]);
+
+async function loadNotes() {
+    try {
+        notes.value = (await getNotes()).map(note => ({
+            id: note.note_id,
+            title: note.title || 'Untitled note',
+            content: note.content,
+        }));
+    } catch {
+        notes.value = [];
+    }
+}
 
 function createNewNote() {
     selectedNoteId.value = null;
@@ -80,7 +89,7 @@ function openNote(note) {
     activeView.value = 'edit';
 }
 
-function saveNote() {
+async function saveNote() {
     if (!currentTitle.value.trim() && !currentContent.value.trim()) {
         activeView.value = 'grid';
         return;
@@ -89,25 +98,17 @@ function saveNote() {
     const title = currentTitle.value.trim() || 'Untitled note';
 
     if (selectedNoteId.value !== null) {
-        // Update existing note
-        const note = notes.value.find(n => n.id === selectedNoteId.value);
-        if (note) {
-            note.title = title;
-            note.content = currentContent.value;
-        }
+        await updateNote(selectedNoteId.value, { title, content: currentContent.value });
     } else {
-        // Save new note
-        notes.value.push({
-            id: Date.now(),
-            title,
-            content: currentContent.value
-        });
+        await createNote({ title, content: currentContent.value });
     }
 
+    await loadNotes();
     activeView.value = 'grid';
 }
 
-function removeNote(noteId) {
+async function removeNote(noteId) {
+    await deleteNote(noteId);
     notes.value = notes.value.filter(note => note.id !== noteId);
     if (selectedNoteId.value === noteId) {
         selectedNoteId.value = null;
@@ -124,6 +125,8 @@ function handleBack() {
         emit('close');
     }
 }
+
+onMounted(loadNotes);
 </script>
 
 <style scoped>
