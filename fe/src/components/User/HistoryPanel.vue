@@ -91,17 +91,35 @@ onMounted(loadMoreHistory)
 }
 
 .history-panel {
+  position: relative;
+  isolation: isolate;
   width: min(780px, 80vw);
   max-height: 78vh;
-  background: rgba(204, 171, 129, 0.25);
+  background: rgba(204, 171, 129, 0.18);
   border: 1px solid rgba(120, 80, 48, 0.35);
   border-radius: 28px;
   padding: 26px 28px 20px;
   box-shadow: 0 18px 36px rgba(58, 35, 20, 0.18);
-  backdrop-filter: blur(22px) saturate(115%);
-  -webkit-backdrop-filter: blur(22px) saturate(115%);
   display: flex;
   flex-direction: column;
+}
+
+.history-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: rgba(204, 171, 129, 0.22);
+  backdrop-filter: blur(22px) saturate(115%);
+  -webkit-backdrop-filter: blur(22px) saturate(115%);
+  pointer-events: none;
+}
+
+.panel-header,
+.history-list {
+  position: relative;
+  z-index: 1;
 }
 
 .history-list {
