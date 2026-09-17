@@ -181,7 +181,7 @@ function playEndSound() {
         oscillator.frequency.setValueAtTime(740, now);
         oscillator.frequency.setValueAtTime(988, now + 0.14);
         gain.gain.setValueAtTime(0.0001, now);
-        gain.gain.exponentialRampToValueAtTime(0.32, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.60, now + 0.02);
         gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
 
         oscillator.connect(gain);
