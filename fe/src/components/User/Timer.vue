@@ -118,6 +118,7 @@ const activePanel = ref(null);
 const sideButtons = ref(null);
 let timerInterval = null;
 let pendingStudySeconds = 0;
+let audioContext = null;
 
 async function loadTimerSettings() {
     try {
@@ -161,6 +162,30 @@ async function flushStudyTime() {
     });
 }
 
+function playEndSound() {
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioContext ||= new AudioContext();
+        const now = audioContext.currentTime;
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(740, now);
+        oscillator.frequency.setValueAtTime(988, now + 0.14);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.32, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
+
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start(now);
+        oscillator.stop(now + 0.42);
+    } catch {
+        // Audio is optional when the browser blocks Web Audio.
+    }
+}
+
 const formatTime = computed(() => {
     const minutes = Math.floor(timeLeft.value / 60);
     const seconds = timeLeft.value % 60;
@@ -171,6 +196,7 @@ function toggleTimer() {
     if (isRunning.value) {
     stopTimer();
     } else {
+    playEndSound();
     isRunning.value = true;
     timerInterval = setInterval(() => {
                 if (timeLeft.value > 0) {
@@ -179,6 +205,8 @@ function toggleTimer() {
                     if (pendingStudySeconds >= 10) void flushStudyTime();
                     return;
                 }
+
+                                playEndSound();
 
                                 if (currentMode.value === 'study') {
                                     currentMode.value = 'break';
