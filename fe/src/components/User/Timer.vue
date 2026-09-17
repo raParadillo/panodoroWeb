@@ -1,12 +1,18 @@
 <template>
     <SideButtons ref="sideButtons" @select="handleSidebarSelect" @logout="handleLogout" />
 
-    <div v-if="activePanel" class="utility-overlay">
+    <div v-if="activePanel && activePanel !== 'music'" class="utility-overlay">
         <HistoryPanel v-if="activePanel === 'history'" @close="closePanel" />
         <NotesCard v-else-if="activePanel === 'notes'" @close="closePanel" />
         <ToDo v-else-if="activePanel === 'checklist'" @close="closePanel" />
         <Analytics v-else-if="activePanel === 'analytics'" @close="closePanel" />
     </div>
+
+    <MusicPanel
+        :is-open="activePanel === 'music'"
+        @close="closeMusicPanel"
+        @open="openMusicPanel"
+    />
 
     <div class="panodoro-container">
     <main class="timer-card">
@@ -105,6 +111,7 @@ import HistoryPanel from './HistoryPanel.vue';
 import NotesCard from './NotesCard.vue';
 import ToDo from './ToDo.vue';
 import Analytics from './Analytics.vue';
+import MusicPanel from './MusicPanel.vue';
 
 const studyMinutes = ref(25);
 const breakMinutes = ref(5);
@@ -255,7 +262,19 @@ function handleSidebarSelect(id) {
 
 function closePanel() {
     activePanel.value = null;
-  sideButtons.value?.resetSelection();
+    sideButtons.value?.resetSelection();
+}
+
+function closeMusicPanel() {
+    if (activePanel.value === 'music') {
+        activePanel.value = null;
+        sideButtons.value?.resetSelection();
+    }
+}
+
+function openMusicPanel() {
+    activePanel.value = 'music';
+    sideButtons.value?.setActiveItem?.('music');
 }
 
 function handleLogout() {

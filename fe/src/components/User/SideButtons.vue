@@ -4,7 +4,8 @@ import {
   ListChecks, 
   FileText, 
   History, 
-  BarChart3, 
+  BarChart3,
+  Music2,
   LogOut 
 } from 'lucide-vue-next'
 
@@ -16,7 +17,8 @@ const navItems = [
   { id: 'checklist', name: 'Checklist', icon: ListChecks },
   { id: 'notes', name: 'Notes', icon: FileText },
   { id: 'history', name: 'History', icon: History },
-  { id: 'analytics', name: 'Analytics', icon: BarChart3 }
+  { id: 'analytics', name: 'Analytics', icon: BarChart3 },
+  { id: 'music', name: 'Music', icon: Music2 }
 ]
 
 function handleSelect(id) {
@@ -33,11 +35,15 @@ function resetSelection() {
   activeItem.value = ''
 }
 
+function setActiveItem(id) {
+  activeItem.value = id || ''
+}
+
 function handleLogout() {
   emit('logout')
 }
 
-defineExpose({ resetSelection })
+defineExpose({ resetSelection, setActiveItem })
 </script>
 
 <template>
