@@ -71,7 +71,7 @@ onUnmounted(() => clearInterval(refreshInterval))
   padding: 1.5rem;
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 22px;
-  background: rgba(203, 178, 152, 0.78);
+  background: #cbb298;
   box-shadow: 0 18px 36px rgba(58, 35, 20, 0.24);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);

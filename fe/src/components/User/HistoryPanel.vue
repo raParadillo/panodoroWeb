@@ -95,7 +95,7 @@ onMounted(loadMoreHistory)
   isolation: isolate;
   width: min(780px, 80vw);
   max-height: 78vh;
-  background: rgba(204, 171, 129, 0.18);
+  background: #c9a97f;
   border: 1px solid rgba(120, 80, 48, 0.35);
   border-radius: 28px;
   padding: 26px 28px 20px;
@@ -110,7 +110,7 @@ onMounted(loadMoreHistory)
   inset: 0;
   z-index: 0;
   border-radius: inherit;
-  background: rgba(204, 171, 129, 0.22);
+  background: transparent;
   backdrop-filter: blur(22px) saturate(115%);
   -webkit-backdrop-filter: blur(22px) saturate(115%);
   pointer-events: none;

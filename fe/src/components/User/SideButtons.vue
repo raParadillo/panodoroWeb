@@ -132,7 +132,7 @@ defineExpose({ resetSelection })
   height: 44px;
   border-radius: 14px;
   border: 1px solid transparent;
-  background: rgba(94, 50, 15, 0.8);
+  background: #5e320f;
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -149,7 +149,7 @@ defineExpose({ resetSelection })
 }
 
 .nav-btn:hover {
-  background: rgba(95, 48, 10, 0.22);
+  background: #7a3d12;
   
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -161,17 +161,17 @@ defineExpose({ resetSelection })
 }
 
 .nav-btn.active {
-  background: #962b08bb;
+  background: #962b08;
   border-color: rgba(255, 255, 255, 0.4);
 }
 
 
 .logout-btn {
-  background: rgba(255, 255, 255, 0.08);
+  background: #4a3025;
 }
 
 .logout-btn:hover {
-  background: rgba(220, 38, 38, 0.3);
+  background: #8a2f25;
   border-color: rgba(239, 68, 68, 0.5);
   color: #fca5a5;
 }

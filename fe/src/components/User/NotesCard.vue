@@ -133,7 +133,7 @@ onMounted(loadNotes);
 .notes-card {
     width: 580px;
     height: 360px;
-    background: rgba(203, 178, 152, 0.82);
+    background: #cbb298;
     /* Warm beige tone matching design */
     border-radius: 16px;
     padding: 20px 24px;

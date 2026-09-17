@@ -89,7 +89,7 @@ onMounted(loadTasks)
 /* Core layout of the standalone capsule block */
 .modal-card {
     width: min(680px, calc(100vw - 2rem));
-    background: rgba(204, 168, 133, 0.82);
+    background: #cca885;
     border-radius: 20px; /* Enhanced corners for a larger box scale */
     padding: 24px; /* Increased padding inside the container */
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
