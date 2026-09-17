@@ -49,6 +49,30 @@ const radioStations = [
     name: '🌌 Drone Zone Ambient',
     desc: 'Atmospheric soundscapes for high focus & calm',
     streamUrl: 'https://ice1.somafm.com/dronezone-128-mp3'
+  },
+  {
+    id: 'secret-agent',
+    name: '🕶️ Secret Agent',
+    desc: 'Cool cinematic instrumentals and spy-jazz grooves',
+    streamUrl: 'https://ice1.somafm.com/secretagent-128-mp3'
+  },
+  {
+    id: 'ill-street',
+    name: '🎷 Illinois Street Lounge',
+    desc: 'Lounge, exotica, and mellow cocktail-hour sounds',
+    streamUrl: 'https://ice1.somafm.com/illstreet-128-mp3'
+  },
+  {
+    id: 'mission-control',
+    name: '🚀 Mission Control',
+    desc: 'Ambient space music for quiet deep-work sessions',
+    streamUrl: 'https://ice1.somafm.com/missioncontrol-128-mp3'
+  },
+  {
+    id: 'defcon',
+    name: '💾 DEF CON Radio',
+    desc: 'Electronic sounds and hacker conference energy',
+    streamUrl: 'https://ice1.somafm.com/defcon-128-mp3'
   }
 ]
 
