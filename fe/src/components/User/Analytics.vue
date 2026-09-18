@@ -5,9 +5,11 @@ import { getAnalytics } from '../../services/api'
 const emit = defineEmits(['close'])
 const totalStudySeconds = ref(0)
 const todayStudySeconds = ref(0)
+const isLoading = ref(false)
 let refreshInterval = null
 
 async function loadStats() {
+  isLoading.value = true
   try {
     const stats = await getAnalytics()
     totalStudySeconds.value = stats.total_study_seconds
@@ -15,6 +17,8 @@ async function loadStats() {
   } catch {
     totalStudySeconds.value = 0
     todayStudySeconds.value = 0
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -39,6 +43,10 @@ onUnmounted(() => clearInterval(refreshInterval))
 
 <template>
   <section class="analytics-card" aria-label="Study analytics">
+    <div v-if="isLoading" class="loading-screen" role="status" aria-live="polite">
+      <span class="loading-spinner" aria-hidden="true"></span>
+      <span>Loading analytics...</span>
+    </div>
     <header class="analytics-header">
       <button class="close-btn" type="button" aria-label="Close analytics" @click="emit('close')">&lt;</button>
       <div>
@@ -67,6 +75,7 @@ onUnmounted(() => clearInterval(refreshInterval))
 
 <style scoped>
 .analytics-card {
+  position: relative;
   width: min(440px, 100%);
   padding: 1.5rem;
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -76,6 +85,34 @@ onUnmounted(() => clearInterval(refreshInterval))
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   color: #4a3025;
+}
+
+.loading-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-radius: inherit;
+  background: rgba(203, 178, 152, 0.94);
+  color: #5d4037;
+  font-weight: 600;
+}
+
+.loading-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(93, 64, 55, 0.22);
+  border-top-color: #7d5c3f;
+  border-radius: 50%;
+  animation: loading-spin 0.8s linear infinite;
+}
+
+@keyframes loading-spin {
+  to { transform: rotate(360deg); }
 }
 
 .analytics-header {
