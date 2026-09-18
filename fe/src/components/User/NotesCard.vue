@@ -1,5 +1,10 @@
 <template>
     <div class="notes-card">
+        <div v-if="isLoading" class="loading-screen" role="status" aria-live="polite">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            <span>Loading notes...</span>
+        </div>
+
         <!-- Header Controls -->
         <div class="notes-header">
             <button class="back-btn" @click="handleBack">
@@ -59,11 +64,13 @@ const activeView = ref('grid');
 const selectedNoteId = ref(null);
 const currentTitle = ref('');
 const currentContent = ref('');
+const isLoading = ref(false);
 
 // Reactive store for notes
 const notes = ref([]);
 
 async function loadNotes() {
+    isLoading.value = true;
     try {
         notes.value = (await getNotes()).map(note => ({
             id: note.note_id,
@@ -72,6 +79,8 @@ async function loadNotes() {
         }));
     } catch {
         notes.value = [];
+    } finally {
+        isLoading.value = false;
     }
 }
 
@@ -131,6 +140,7 @@ onMounted(loadNotes);
 
 <style scoped>
 .notes-card {
+    position: relative;
     width: 580px;
     height: 360px;
     background: #cbb298;
@@ -144,6 +154,34 @@ onMounted(loadNotes);
     color: #5d4037;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+}
+
+.loading-screen {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    border-radius: inherit;
+    background: rgba(203, 178, 152, 0.94);
+    color: #5d4037;
+    font-weight: 600;
+}
+
+.loading-spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(93, 64, 55, 0.22);
+    border-top-color: #7d5c3f;
+    border-radius: 50%;
+    animation: loading-spin 0.8s linear infinite;
+}
+
+@keyframes loading-spin {
+    to { transform: rotate(360deg); }
 }
 
 /* Header */

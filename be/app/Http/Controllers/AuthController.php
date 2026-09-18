@@ -56,39 +56,39 @@ class AuthController extends Controller
         return $this->tokenResponse($user);
     }
 
-    public function forgotPassword(Request $request): JsonResponse
-    {
-        if ($response = $this->throttle($request, 'forgot-password', 3, 900)) {
-            return $response;
-        }
+        public function forgotPassword(Request $request): JsonResponse
+        {
+            if ($response = $this->throttle($request, 'forgot-password', 3, 900)) {
+                return $response;
+            }
 
-        $validated = $request->validate([
-            'email' => ['required', 'email'],
-        ]);
-
-        $user = User::where('email', $validated['email'])->first();
-
-        if ($user) {
-            $code = (string) random_int(100000, 999999);
-
-            DB::table('password_resets')
-                ->where('user_id', $user->user_id)->where('used', false)->update(['used' => true]);
-
-            DB::table('password_resets')->insert([
-                'user_id' => $user->user_id,
-                'code' => $this->hashResetCode($code),
-                'expires_at' => now()->addMinutes(15),
-                'used' => false,
+            $validated = $request->validate([
+                'email' => ['required', 'email'],
             ]);
 
-            Mail::send('emails.password-reset', ['code' => $code], function ($message) use ($user) {
-                $message->to($user->email)
-                    ->subject('Panodoro password reset code');
-            });
-        }
+            $user = User::where('email', $validated['email'])->first();
 
-        return response()->json(['message' => 'A password reset code was sent to your email.']);
-    }
+            if ($user) {
+                $code = (string) random_int(100000, 999999);
+
+                DB::table('password_resets')
+                    ->where('user_id', $user->user_id)->where('used', false)->update(['used' => true]);
+
+                DB::table('password_resets')->insert([
+                    'user_id' => $user->user_id,
+                    'code' => $this->hashResetCode($code),
+                    'expires_at' => now()->addMinutes(15),
+                    'used' => false,
+                ]);
+
+                Mail::send('emails.password-reset', ['code' => $code], function ($message) use ($user) {
+                    $message->to($user->email)
+                        ->subject('Panodoro password reset code');
+                });
+            }
+
+            return response()->json(['message' => 'A password reset code was sent to your email.']);
+        }
 
     public function resetPassword(Request $request): JsonResponse
     {

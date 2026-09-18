@@ -7,8 +7,10 @@ const emit = defineEmits(['close'])
 const currentView = ref('list') // 'list' or 'create'
 const newListTitle = ref('')
 const todoLists = ref([])
+const isLoading = ref(false)
 
 async function loadTasks() {
+    isLoading.value = true
     try {
         todoLists.value = (await getTasks()).map(task => ({
             id: task.task_id,
@@ -17,6 +19,8 @@ async function loadTasks() {
         }))
     } catch {
         todoLists.value = []
+    } finally {
+        isLoading.value = false
     }
 }
 
@@ -47,6 +51,10 @@ onMounted(loadTasks)
 <template>
     <!-- List View Content Card -->
     <div v-if="currentView === 'list'" class="modal-card">
+        <div v-if="isLoading" class="loading-screen" role="status" aria-live="polite">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            <span>Loading tasks...</span>
+        </div>
         <div class="card-header">
             <button class="icon-btn" @click="emit('close')" aria-label="Close to do list">&lt;</button>
             <span class="header-title">To do List</span>
@@ -88,6 +96,7 @@ onMounted(loadTasks)
 <style scoped>
 /* Core layout of the standalone capsule block */
 .modal-card {
+    position: relative;
     width: min(680px, calc(100vw - 2rem));
     background: #cca885;
     border-radius: 20px; /* Enhanced corners for a larger box scale */
@@ -96,6 +105,34 @@ onMounted(loadTasks)
     box-sizing: border-box;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+}
+
+.loading-screen {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    border-radius: inherit;
+    background: rgba(204, 168, 133, 0.94);
+    color: #fff;
+    font-weight: 600;
+}
+
+.loading-spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: loading-spin 0.8s linear infinite;
+}
+
+@keyframes loading-spin {
+    to { transform: rotate(360deg); }
 }
 
 .card-header {
