@@ -209,7 +209,6 @@ function toggleTimer() {
                 if (timeLeft.value > 0) {
                     timeLeft.value--;
                     if (currentMode.value === 'study') recordStudySecond();
-                    if (pendingStudySeconds >= 10) void flushStudyTime();
                     return;
                 }
 
